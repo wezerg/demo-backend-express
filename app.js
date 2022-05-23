@@ -75,6 +75,10 @@ app.delete('/task/:id', [authenticationToken], (req, res) => {
     if (parseInt(req.params.id) === NaN) {
         throw new Error("Ceci n'est pas une clé valable");
     }
+    const tache = Taches.get(parseInt(req.params.id));
+    if (parseInt(req.user.id) !== parseInt(tache.creePar)) {
+        throw new Error("Vous ne pouvez pas supprimer la tâche d'un autre utilisateur");
+    }
     Taches.delete(parseInt(req.params.id));
     res.status(200).send("Ressources supprimée");
 });
