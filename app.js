@@ -35,6 +35,10 @@ app.post('/task', (req, res) => {
     res.status(201).send(value);
 });
 
+app.use((err, req, res, next) => {
+    res.status(400).send({error: err.message});
+});
+
 if (process.env.NODE_ENV !== "test") {
     app.listen(3000);
 }
