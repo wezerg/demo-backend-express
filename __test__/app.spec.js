@@ -9,4 +9,12 @@ describe('Task', () => {
     ])('Should pass confirmation data', async (objectTest) => {
         const result = await request(app).post('/task').send(objectTest).expect(201);
     });
+    test('Should not find object', async () => {
+        const result = await request(app).get('/task/136').send().expect(400);
+    });
+    test('Should find object', async () => {
+        const sendData = await request(app).post('/task').send({description: "Hello World", faite: false}).expect(201);
+        console.log(Taches.getAll());
+        const result = await request(app).get('/task/3').send().expect(200);
+    });
 });

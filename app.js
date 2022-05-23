@@ -14,7 +14,7 @@ app.get('/task', (req, res) => {
     res.status(200).send(taches);
 });
 app.get('/task/:id', (req, res) => {
-    const tache = Taches.get(req.params.id);
+    const tache = Taches.get(parseInt(req.params.id));
     if (!tache) {
         throw new Error('Aucune tache trouvée');
     }
