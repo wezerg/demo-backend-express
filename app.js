@@ -13,6 +13,13 @@ app.get('/task', (req, res) => {
     const taches = Taches.getAll();
     res.status(200).send(taches);
 });
+app.get('/task/:id', (req, res) => {
+    const tache = Taches.get(req.params.id);
+    if (!tache) {
+        throw new Error('Aucune tache trouvée');
+    }
+    res.status(200).send(tache);
+});
 
 app.post('/task', (req, res) => {
     const payload = req.body;
