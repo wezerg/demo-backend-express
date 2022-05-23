@@ -3,7 +3,8 @@ const app = express();
 require('express-async-errors');
 const Joi = require('joi');
 const bcrypt = require('bcrypt');
-
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 // Bdd
 const DbSet = require('./db.js');
 const Taches = new DbSet('Taches');
@@ -79,7 +80,7 @@ app.post('/register', async (req, res) => {
         throw new Error(error.details[0].message);
     }
     // Vérification d'un compte existant en base de données
-    const {id, entity} = Users.findBy('email', value.email);
+    const {entity} = Users.findBy('email', value.email);
     if (entity) {
         throw new Error("Un compte existe déja");
     }
@@ -91,6 +92,28 @@ app.post('/register', async (req, res) => {
     Users.insert(value);
     // Renvoit
     res.status(201).send({email: value.email, username: value.username});
+});
+
+app.post('/login', async (req, res) => {
+    const payload = req.body;
+    const scheme = Joi.object({
+        email: Joi.string().max(255).email().required(),
+        password: Joi.string().max(255).required()
+    });
+    const {value, error} = scheme.validate(payload);
+    if (error) {
+        throw new Error(error.details[0].message);
+    }
+    const {id, entity} = Users.findBy('email', value.email);
+    if (!entity) {
+        throw new Error("Ce compte n'existe pas");
+    }
+    const goodHash = await bcrypt.compare(payload.password, entity.password);
+    if (!goodHash) {
+        throw new Error('Mot de passe invalide');
+    }
+    const token = jwt.sign({id}, process.env.SECRET_KEY);
+    res.header('x-auth-token', token).status(200).send("Connexion réussie");
 });
 
 
