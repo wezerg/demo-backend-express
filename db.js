@@ -35,6 +35,17 @@ class DbSet{
             throw new Error(`Key ${id} doesn't not exists`);
         }
     }
+    findBy(propertyName, value) {
+      let result = false;
+      this.memoryDb.forEach((obj, id) => {
+        if (!result) {
+          if (propertyName in obj && obj[propertyName] === value) {
+            result = { id: id, entity: obj };
+          }
+        }
+      });
+      return result || {};
+    }
 }
   
 module.exports = DbSet;
