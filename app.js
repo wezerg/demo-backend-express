@@ -116,8 +116,6 @@ app.post('/login', async (req, res) => {
     res.header('x-auth-token', token).status(200).send("Connexion réussie");
 });
 
-
-
 // Middleware d'erreur 400
 app.use((err, req, res, next) => {
     res.status(400).send({error: err.message});

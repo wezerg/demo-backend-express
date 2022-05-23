@@ -47,6 +47,7 @@ describe('Register & Login', () => {
         {email: "Fabien@example.com", username: "Fabien", password: "1234"},
     ])('Should register and login', async (objectTest) => {
         const register = await request(app).post('/register').send(objectTest).expect(201);
-        //const login = await request(app).post('/login')
+        delete objectTest.username;
+        const login = await request(app).post('/login').send(objectTest).expect(200);
     });
 });
