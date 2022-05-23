@@ -1,12 +1,19 @@
 const express = require('express');
 const app = express();
+require('express-async-errors');
 const Joi = require('joi');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 // Bdd
 const DbSet = require('./db.js');
 const Taches = new DbSet('Taches');
+const Users = new DbSet('Users');
 
 // Middleware
 app.use(express.json());
+
+
 
 // Routes Taches
 app.get('/task', (req, res) => {
@@ -59,10 +66,62 @@ app.delete('/task/:id', (req, res) => {
     res.status(200).send("Ressources supprimée");
 });
 
+// Route Login - Register
+app.post('/register', async (req, res) => {
+    const payload = req.body;
+    // Joi
+    const scheme = Joi.object({
+        email: Joi.string().max(255).email().required(),
+        username: Joi.string().max(255).required(),
+        password: Joi.string().max(255).required()
+    });
+    const {value, error} = scheme.validate(payload);
+    if (error) {
+        throw new Error(error.details[0].message);
+    }
+    // Vérification d'un compte existant en base de données
+    const {entity} = Users.findBy('email', value.email);
+    if (entity) {
+        throw new Error("Un compte existe déja");
+    }
+    // Hash du mot de passe
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(value.password, salt);
+    value.password = passwordHash;
+    // Enregistrement en bdd
+    Users.insert(value);
+    // Renvoit
+    res.status(201).send({email: value.email, username: value.username});
+});
+
+app.post('/login', async (req, res) => {
+    const payload = req.body;
+    const scheme = Joi.object({
+        email: Joi.string().max(255).email().required(),
+        password: Joi.string().max(255).required()
+    });
+    const {value, error} = scheme.validate(payload);
+    if (error) {
+        throw new Error(error.details[0].message);
+    }
+    const {id, entity} = Users.findBy('email', value.email);
+    if (!entity) {
+        throw new Error("Ce compte n'existe pas");
+    }
+    const goodHash = await bcrypt.compare(payload.password, entity.password);
+    if (!goodHash) {
+        throw new Error('Mot de passe invalide');
+    }
+    const token = jwt.sign({id}, process.env.SECRET_KEY);
+    res.header('x-auth-token', token).status(200).send("Connexion réussie");
+});
+
+// Middleware d'erreur 400
 app.use((err, req, res, next) => {
     res.status(400).send({error: err.message});
 });
 
+// Ecoute sur un port
 if (process.env.NODE_ENV !== "test") {
     app.listen(3000);
 }

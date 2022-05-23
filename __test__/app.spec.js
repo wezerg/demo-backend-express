@@ -39,3 +39,15 @@ describe('Task Delete', () => {
         expect(Taches.memoryDb.entries.length).toBe(0);
     });
 });
+
+describe('Register & Login', () => {
+    test.each([
+        {email: "Jean@example.com", username: "Jean", password: "1234"},
+        {email: "Lila@example.com", username: "Lila", password: "1234"},
+        {email: "Fabien@example.com", username: "Fabien", password: "1234"},
+    ])('Should register and login', async (objectTest) => {
+        const register = await request(app).post('/register').send(objectTest).expect(201);
+        delete objectTest.username;
+        const login = await request(app).post('/login').send(objectTest).expect(200);
+    });
+});
