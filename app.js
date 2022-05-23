@@ -10,6 +10,11 @@ const DbSet = require('./db.js');
 const Taches = new DbSet('Taches');
 const Users = new DbSet('Users');
 
+if (!process.env.SECRET_KEY) {
+    console.error("Error : Variable d'environnement 'SECRET_KEY' inexistante -- Exit Program");
+    process.exit(1);
+}
+
 // Middleware
 app.use(express.json());
 // - Authentification
