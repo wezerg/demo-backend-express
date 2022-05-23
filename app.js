@@ -1,12 +1,28 @@
 const express = require('express');
 const app = express();
+const Joi = require('joi');
+// Bdd
 const DbSet = require('./db.js');
 const Taches = new DbSet('Taches');
 
+// Middleware
+app.use(express.json());
+
 // Routes Taches
-app.get('/', (req, res) => {
+app.get('/task', (req, res) => {
     const taches = Taches.getAll();
     res.status(200).send(taches);
+});
+
+app.post('/task', (req, res) => {
+    const payload = req.body;
+    const scheme = Joi.object({
+        id: Joi.number().required(),
+        description: Joi.string().max(255).required(),
+        faite: Joi.boolean().required()
+    });
+    const {value, error} = scheme.validate(payload);
+    res.status(201).send('Objet créer');
 });
 
 if (process.env.NODE_ENV !== "test") {
