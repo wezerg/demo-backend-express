@@ -21,6 +21,20 @@ class DbSet{
     exists(id) {
       return this.memoryDb.has(id);
     }
+    update(id, obj) {
+        if (this.exists(id)) {
+            this.memoryDb.set(id, obj);
+        } else {
+            throw new Error(`Key ${id} doesn't not exists`);
+        }
+    }
+    delete(id) {
+        if (this.exists(id)) {
+            this.memoryDb.delete(id);
+        } else {
+            throw new Error(`Key ${id} doesn't not exists`);
+        }
+    }
 }
   
 module.exports = DbSet;
