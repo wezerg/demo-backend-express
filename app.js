@@ -183,4 +183,4 @@ app.use((err, req, res, next) => {
 if (process.env.NODE_ENV !== "test") {
     app.listen(3000);
 }
-module.exports = { app, Taches, Users };
+module.exports = { app, Taches, Users, Task, User };
