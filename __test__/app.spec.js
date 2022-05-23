@@ -1,5 +1,7 @@
 const {app, Taches, Users} = require('../app');
 const request = require('supertest');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 afterEach(() => {
     Taches.memoryDb = new Map();
@@ -13,6 +15,13 @@ describe('Task', () => {
         const register = await request(app).post('/register').send({email: "email@email.com", username: "vivian", password: "1234"}).expect(201);
         const login = await request(app).post('/login').send({email: "email@email.com", password: "1234"}).expect(200);
         const result = await request(app).post('/task').set('x-auth-token', login.headers['x-auth-token']).send({description: "Description 1", faite: true}).expect(201);
+        let userInToken = "";
+        try {
+            userInToken = jwt.verify(login.headers['x-auth-token'], process.env.SECRET_KEY);
+        } catch (error) {
+            throw new Error('Le token est invalide');
+        }
+        expect(parseInt(result.body.creePar)).toBe(parseInt(userInToken.id));
     });
     test('Should not find object', async () => {
         const result = await request(app).get('/task/136').send().expect(400);
