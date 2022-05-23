@@ -34,6 +34,19 @@ app.post('/task', (req, res) => {
     Taches.insert(value);
     res.status(201).send(value);
 });
+app.put('/task/:id', (req, res) => {
+    const payload = req.body;
+    const scheme = Joi.object({
+        description: Joi.string().max(255).required(),
+        faite: Joi.boolean().required()
+    });
+    const {value, error} = scheme.validate(payload);
+    if (error) {
+        throw new Error(error.details[0].message);
+    }
+    Taches.update(parseInt(req.params.id), value);
+    res.status(200).send(value);
+});
 
 app.use((err, req, res, next) => {
     res.status(400).send({error: err.message});

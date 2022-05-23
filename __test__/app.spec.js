@@ -18,3 +18,11 @@ describe('Task', () => {
         const result = await request(app).get('/task/3').send().expect(200);
     });
 });
+
+describe('Task Update', () => {
+    test('Should update one entry', async () => {
+        const result = await request(app).post('/task').send({description: "Desciption 1", faite: false}).expect(201);
+        const modif = await request(app).put('/task/0').send({description: "Description1", faite: true}).expect(200);
+        expect(modif.body.faite).toBe(true);
+    });
+});
