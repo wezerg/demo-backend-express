@@ -17,12 +17,15 @@ app.get('/task', (req, res) => {
 app.post('/task', (req, res) => {
     const payload = req.body;
     const scheme = Joi.object({
-        id: Joi.number().required(),
         description: Joi.string().max(255).required(),
         faite: Joi.boolean().required()
     });
     const {value, error} = scheme.validate(payload);
-    res.status(201).send('Objet créer');
+    if (error) {
+        throw new Error(error.details[0].message);
+    }
+    Taches.insert(value);
+    res.status(201).send(value);
 });
 
 if (process.env.NODE_ENV !== "test") {
