@@ -35,6 +35,9 @@ app.post('/task', (req, res) => {
     res.status(201).send(value);
 });
 app.put('/task/:id', (req, res) => {
+    if (parseInt(req.params.id) === NaN) {
+        throw new Error("Ceci n'est pas une clé valable");
+    }
     const payload = req.body;
     const scheme = Joi.object({
         description: Joi.string().max(255).required(),
@@ -46,6 +49,14 @@ app.put('/task/:id', (req, res) => {
     }
     Taches.update(parseInt(req.params.id), value);
     res.status(200).send(value);
+});
+
+app.delete('/task/:id', (req, res) => {
+    if (parseInt(req.params.id) === NaN) {
+        throw new Error("Ceci n'est pas une clé valable");
+    }
+    Taches.delete(parseInt(req.params.id));
+    res.status(200).send("Ressources supprimée");
 });
 
 app.use((err, req, res, next) => {
