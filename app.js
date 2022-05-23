@@ -12,8 +12,20 @@ const Users = new DbSet('Users');
 
 // Middleware
 app.use(express.json());
-
-
+// - Authentification
+function authenticationToken(req, res, next){
+    const token = req.header('x-auth-token');
+    if (!token) {
+        throw new Error('Vous devez vous connecté pour accéder à cette ressource');
+    }
+    try {
+        const userInToken = jwt.verify(token, process.env.SECRET_KEY);
+        req.user = userInToken;
+        next();
+    } catch (error) {
+        throw new Error('Le token que vous avez fourni est invalide');
+    }
+}
 
 // Routes Taches
 app.get('/task', (req, res) => {
@@ -28,7 +40,7 @@ app.get('/task/:id', (req, res) => {
     res.status(200).send(tache);
 });
 
-app.post('/task', (req, res) => {
+app.post('/task', [authenticationToken], (req, res) => {
     const payload = req.body;
     const scheme = Joi.object({
         description: Joi.string().max(255).required(),
@@ -38,10 +50,11 @@ app.post('/task', (req, res) => {
     if (error) {
         throw new Error(error.details[0].message);
     }
+    value.creePar = req.user.id;
     Taches.insert(value);
     res.status(201).send(value);
 });
-app.put('/task/:id', (req, res) => {
+app.put('/task/:id', [authenticationToken], (req, res) => {
     if (parseInt(req.params.id) === NaN) {
         throw new Error("Ceci n'est pas une clé valable");
     }
@@ -58,9 +71,13 @@ app.put('/task/:id', (req, res) => {
     res.status(200).send(value);
 });
 
-app.delete('/task/:id', (req, res) => {
+app.delete('/task/:id', [authenticationToken], (req, res) => {
     if (parseInt(req.params.id) === NaN) {
         throw new Error("Ceci n'est pas une clé valable");
+    }
+    const tache = Taches.get(parseInt(req.params.id));
+    if (parseInt(req.user.id) !== parseInt(tache.creePar)) {
+        throw new Error("Vous ne pouvez pas supprimer la tâche d'un autre utilisateur");
     }
     Taches.delete(parseInt(req.params.id));
     res.status(200).send("Ressources supprimée");
@@ -125,4 +142,4 @@ app.use((err, req, res, next) => {
 if (process.env.NODE_ENV !== "test") {
     app.listen(3000);
 }
-module.exports = { app, Taches };
+module.exports = { app, Taches, Users };
