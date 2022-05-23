@@ -50,6 +50,7 @@ app.post('/task', [authenticationToken], (req, res) => {
     if (error) {
         throw new Error(error.details[0].message);
     }
+    value.creePar = req.user.id;
     Taches.insert(value);
     res.status(201).send(value);
 });
